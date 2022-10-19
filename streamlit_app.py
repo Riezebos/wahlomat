@@ -23,31 +23,19 @@ mapping = {
 diff_total = 0
 for _, question, uenig, enig, volt in df.itertuples():
     st.markdown(f"## {question}\n\n**Enig:** {enig}\n\n**Uenig:** {uenig}")
-    answer = st.select_slider(label="Vælg venligst din stilling",options=mapping.keys(),key=question)
+    answer = st.radio(label="Vælg venligst din stilling",options=mapping.keys(),key=question,horizontal=True)
     value = abs(volt - mapping[answer])
     diff_total += value
 
 similarity = 100 - diff_total
 st.header(f"Lighed med Volt Danmark: {similarity}%")
 
+st.markdown(
+"""
+Du er ret enig med Volt Danmark, så hvis du vil have flere partier, der er enig med dig så støt Volts opstilling 💜
 
-# with st.echo(code_location='below'):
-#     total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-#     num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+Støt her: https://www.vaelgererklaering.dk/om-partiet?election=eu&party=e8e2a255-9ebb-40eb-9703-5565eb4253fe
 
-#     Point = namedtuple('Point', 'x y')
-#     data = []
-
-#     points_per_turn = total_points / num_turns
-
-#     for curr_point_num in range(total_points):
-#         curr_turn, i = divmod(curr_point_num, points_per_turn)
-#         angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-#         radius = curr_point_num / total_points
-#         x = radius * math.cos(angle)
-#         y = radius * math.sin(angle)
-#         data.append(Point(x, y))
-
-#     st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-#         .mark_circle(color='#0068c9', opacity=0.5)
-#         .encode(x='x:Q', y='y:Q'))
+Læs mere her: https://volt.link/stemvolt
+"""
+)
