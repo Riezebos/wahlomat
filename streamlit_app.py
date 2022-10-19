@@ -51,6 +51,19 @@ else:
         relevant["Volt Holdning"] - relevant["Din Holdning"]
     ).abs().sum() / (3 * len(relevant))
     st.markdown(f"### Lighed med Volt Danmark: {similarity*100:.0f}%")
+
+
+st.markdown(
+    """
+Du er ret enig med Volt Danmark, så hvis du vil have flere partier, der er enig med dig så støt Volts opstilling 💜
+
+Støt her: https://www.vaelgererklaering.dk/om-partiet?election=eu&party=e8e2a255-9ebb-40eb-9703-5565eb4253fe
+
+Læs mere her: https://volt.link/stemvolt
+"""
+)
+
+if not relevant.empty:
     df_long = pd.melt(
         relevant[["Volt Holdning", "Din Holdning"]].reset_index(),
         id_vars="Erklæring",
@@ -73,20 +86,10 @@ else:
         height=0.5*len(df_long),
         orient="v",
         aspect=10/len(df_long),
-        sizes=[100,100]
+        sizes=[100,100],
     )
+
     ax.set_axis_labels(x_var="", y_var="")
     labels = [textwrap.fill(label, 50) for label in df_long["Erklæring"].drop_duplicates()]
     ax.set_yticklabels(labels)
     st.pyplot(ax.figure)
-
-
-st.markdown(
-    """
-Du er ret enig med Volt Danmark, så hvis du vil have flere partier, der er enig med dig så støt Volts opstilling 💜
-
-Støt her: https://www.vaelgererklaering.dk/om-partiet?election=eu&party=e8e2a255-9ebb-40eb-9703-5565eb4253fe
-
-Læs mere her: https://volt.link/stemvolt
-"""
-)
