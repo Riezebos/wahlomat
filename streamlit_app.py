@@ -31,6 +31,7 @@ mapping = {
     "Ingen præference": None,
 }
 inv_mapping = {v: k for k, v in mapping.items()}
+labels_format_mapping = {v.replace(" ","\n"): k for k, v in mapping.items()}
 
 for question, uenig, enig in df[["Uenig", "Enig"]].itertuples():
     st.markdown(f"### {question}\n\n**Enig:** {enig}\n\n**Uenig:** {uenig}")
@@ -70,7 +71,7 @@ if not relevant.empty:
         var_name="Legende",
         value_name="Holdning",
     )
-    df_long["Holdning"] = df_long["Holdning"].map(inv_mapping)
+    df_long["Holdning"] = df_long["Holdning"].map(labels_format_mapping)
     palette = {
         "Volt Holdning": "#502379",
         "Din Holdning": "#82D0F4",
