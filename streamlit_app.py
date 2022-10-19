@@ -31,7 +31,7 @@ mapping = {
     "Ingen præference": None,
 }
 inv_mapping = {v: k for k, v in mapping.items()}
-labels_format_mapping = {v.replace(" ","\n"): k for k, v in mapping.items()}
+labels_format_mapping = {v: k.replace(" ","\n") for k, v in mapping.items()}
 
 for question, uenig, enig in df[["Uenig", "Enig"]].itertuples():
     st.markdown(f"### {question}\n\n**Enig:** {enig}\n\n**Uenig:** {uenig}")
