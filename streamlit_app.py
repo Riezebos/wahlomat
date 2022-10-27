@@ -1,19 +1,28 @@
+import warnings
+import logging
+warnings.filterwarnings( "ignore", module = "seaborn\..*" )
 import pandas as pd
 import seaborn as sns
 import streamlit as st
+import textwrap
 
 custom_params = {
     "axes.grid.axis": "both",
-
 }
-import textwrap
+
 
 sns.set_theme(rc=custom_params)
 sns.set_context("talk")
 
+st.set_page_config(page_title="Kandidattesten - Volt Danmark", page_icon="📋",)
+
 
 @st.cache(allow_output_mutation=True)
 def get_data():
+    log = logging.getLogger()
+    log.setLevel(logging.INFO)
+    user = ",".join(f"{k}: {v}" for k,v in st.experimental_user.items())
+    log.info(f"New user connected:{user}")
     df = pd.read_csv("questions.tsv", sep="\t", index_col="Erklæring")
     df["Din Holdning"] = None
     return df
