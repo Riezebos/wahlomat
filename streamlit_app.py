@@ -1,10 +1,12 @@
-import warnings
 import logging
-warnings.filterwarnings( "ignore", module = "seaborn\..*" )
+import warnings
+
+warnings.filterwarnings("ignore", module="seaborn\..*")
+import textwrap
+
 import pandas as pd
 import seaborn as sns
 import streamlit as st
-import textwrap
 
 custom_params = {
     "axes.grid.axis": "both",
@@ -14,14 +16,17 @@ custom_params = {
 sns.set_theme(rc=custom_params)
 sns.set_context("talk")
 
-st.set_page_config(page_title="Kandidattesten - Volt Danmark", page_icon="📋",)
+st.set_page_config(
+    page_title="Kandidattesten - Volt Danmark",
+    page_icon="📋",
+)
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache_data
 def get_data():
     log = logging.getLogger()
     log.setLevel(logging.INFO)
-    user = ",".join(f"{k}: {v}" for k,v in st.experimental_user.items())
+    user = ",".join(f"{k}: {v}" for k, v in st.experimental_user.items())
     log.info(f"New user connected:{user}")
     df = pd.read_csv("questions.tsv", sep="\t", index_col="Erklæring")
     df["Din Holdning"] = None
@@ -93,13 +98,15 @@ if not relevant.empty:
         order=list(mapping)[:-1],
         palette=palette,
         legend=False,
-        height=0.5*len(df_long),
+        height=0.5 * len(df_long),
         orient="v",
-        aspect=10/len(df_long),
-        sizes=[100,100],
+        aspect=10 / len(df_long),
+        sizes=[100, 100],
     )
 
     ax.set_axis_labels(x_var="", y_var="")
-    labels = [textwrap.fill(label, 50) for label in df_long["Erklæring"].drop_duplicates()]
+    labels = [
+        textwrap.fill(label, 50) for label in df_long["Erklæring"].drop_duplicates()
+    ]
     ax.set_yticklabels(labels)
     st.pyplot(ax.figure)
