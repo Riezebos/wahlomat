@@ -21,62 +21,96 @@ st.set_page_config(
     page_icon="📋",
 )
 
+languages = {
+    "da": "Dansk",
+    "en": "English",
+}
+
+language = st.sidebar.radio(
+    label="Language",
+    options=languages.keys(),
+    format_func=lambda x: languages[x],
+    horizontal=True,
+    index=0,
+)
+
+title = (
+    "Kandidattesten - Volt Danmark"
+    if language == "da"
+    else "Candidate test - Volt Denmark"
+)
+
+
+st.title(title)
+
 
 @st.cache_data
-def get_data():
+def get_data(language="da"):
     log = logging.getLogger()
     log.setLevel(logging.INFO)
     user = ",".join(f"{k}: {v}" for k, v in st.experimental_user.items())
     log.info(f"New user connected:{user}")
-    df = pd.read_csv("questions.tsv", sep="\t", index_col="Erklæring")
+    df = pd.read_csv(f"data/questions-{language}.tsv", sep="\t", index_col="Erklæring")
     df["Din Holdning"] = None
     return df
 
 
-df = get_data()
+df = get_data(language)
 
-st.title("Kandidattesten - Volt Danmark")
-
-mapping = {
-    "Helt uenig": 1,
-    "Uenig": 2,
-    "Enig": 3,
-    "Helt enig": 4,
-    "Ingen præference": None,
+base_mapping = {
+    1: {"da": "Helt uenig", "en": "Strongly disagree"},
+    2: {"da": "Uenig", "en": "Disagree"},
+    3: {"da": "Enig", "en": "Agree"},
+    4: {"da": "Helt enig", "en": "Strongly agree"},
+    None: {"da": "Ingen præference", "en": "No preference"},
 }
-inv_mapping = {v: k for k, v in mapping.items()}
-# labels_format_mapping = {v: k.replace(" ","\n") for k, v in mapping.items()}
+lang_mapping = {v[language]: k for k, v in base_mapping.items()}
+inv_mapping = {v: k for k, v in lang_mapping.items()}
 
 for question, uenig, enig in df[["Uenig", "Enig"]].itertuples():
-    st.markdown(f"### {question}\n\n**Enig:** {enig}\n\n**Uenig:** {uenig}")
+    st.markdown(
+        f"### {question}\n\n**{'Enig' if language == 'da' else 'Agree'}:** {enig}\n\n**{'Uenig' if language == 'da' else 'Disagree'}:** {uenig}"
+    )
     answer = st.radio(
-        label="Vælg venligst din stilling",
-        options=mapping.keys(),
+        label="Vælg venligst din stilling" if language == "da" else "Please select",
+        options=lang_mapping.keys(),
         key=question,
         horizontal=True,
         index=4,
     )
-    df.loc[question, "Din Holdning"] = mapping[answer]
+    df.loc[question, "Din Holdning"] = lang_mapping[answer]
 
 relevant = df.loc[df["Din Holdning"].notna()]
 if relevant.empty:
-    st.header("Ingen forudgående")
+    st.header("Ingen forudgående" if language == "da" else "No prior")
 else:
     similarity = 1 - (
         relevant["Volt Holdning"] - relevant["Din Holdning"]
     ).abs().sum() / (3 * len(relevant))
-    st.markdown(f"### Lighed med Volt Danmark: {similarity*100:.0f}%")
+    text = (
+        "Lighed med Volt Danmark"
+        if language == "da"
+        else "Similarity with Volt Denmark"
+    )
+    st.markdown(f"### {text}: {similarity*100:.0f}%")
 
-
-st.markdown(
-    """
-Du er ret enig med Volt Danmark, så hvis du vil have flere partier, der er enig med dig så støt Volts opstilling 💜
+explanation = {
+    "da": """Du er ret enig med Volt Danmark, så hvis du vil have flere partier, der er enig med dig så støt Volts opstilling 💜
 
 Støt her: https://www.vaelgererklaering.dk/om-partiet?election=eu&party=e8e2a255-9ebb-40eb-9703-5565eb4253fe
 
 Læs mere her: https://volt.link/stemvolt
-"""
-)
+""",
+    "en": """You are quite in agreement with Volt Denmark, so if you want more parties that agree with you, support Volt's candidacy 💜
+
+Support here: https://www.vaelgererklaering.dk/om-partiet?election=eu&party=e8e2a255-9ebb-40eb-9703-5565eb4253fe
+
+Read more here: https://volt.link/stemvolt
+
+""",
+}
+
+st.markdown(explanation[language])
 
 if not relevant.empty:
     df_long = pd.melt(
@@ -95,7 +129,7 @@ if not relevant.empty:
         x="Holdning",
         y="Erklæring",
         hue="Legende",
-        order=list(mapping)[:-1],
+        order=list(lang_mapping)[:-1],
         palette=palette,
         legend=False,
         height=0.5 * len(df_long),
